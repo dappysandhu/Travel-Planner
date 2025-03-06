@@ -94,6 +94,14 @@ The project enforces code quality through ESLint with:
 - Support for modern ES modules
 - Integration with Vite for real-time linting feedback
 
+## Recommended Git Branching Model (GitFlow)
+
+- **main** branch – Stable version, contains production-ready code.
+- **develop** branch – Ongoing development, merges features before they go to main.
+- **Feature** branches (feature/branch-name) – For new features, merged into develop after completion.
+- **Bugfix** branches (bugfix/branch-name) – For fixing bugs, merged into develop or main.
+- **Hotfix** branches (hotfix/branch-name) – For urgent fixes applied directly to main.
+
 ## Contributing
 
 1. Fork the repository
