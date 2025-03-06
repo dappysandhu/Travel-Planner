@@ -150,4 +150,3 @@ git push origin feature/amazing-feature
 © 2025 Travel Planner Team. All rights reserved.
 
 This is a private project. Unauthorized copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without explicit permission from the project owners.
-Currently, two official plugins are available:
