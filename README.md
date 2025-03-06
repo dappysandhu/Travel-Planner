@@ -19,7 +19,7 @@ A modern React application for planning travels built with Vite.
 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone <repo-url>
 ```
 
 2. Install dependencies
@@ -65,9 +65,10 @@ npm run dev
 - `vite` - Build tool and dev server
 - `eslint` - Code linting
 - `prettier` - Code formatting
-- TypeScript types for development
-
+  
 ## Project Structure
+
+It's gonna expand in future 
 
 ```
 travel-planner/
@@ -93,10 +94,6 @@ The project enforces code quality through ESLint with:
 - Support for modern ES modules
 - Integration with Vite for real-time linting feedback
 
-## Expanding the ESLint configuration
-
-- If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
 ## Contributing
 
 1. Fork the repository
@@ -112,7 +109,6 @@ git checkout -b feature/amazing-feature
    - Write comments for complex logic
    - Follow React best practices
    - Ensure ESLint rules pass
-   - Add proper TypeScript types where applicable
 
 4. Commit your changes
 
