@@ -2,7 +2,7 @@
 name: User Story
 about: Create a new feature request.
 title: ''
-labels: ''
+labels: feature
 assignees: dappysandhu
 
 ---
