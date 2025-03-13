@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Auth from "./pages/Auth";
+import Home from "./pages/Home";
 
 function App() {
   return (
@@ -9,6 +10,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={<Home />} />
+          {/* Add routes for Login and Register */}
         </Routes>
       </Router>
     </div>
