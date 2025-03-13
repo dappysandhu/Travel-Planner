@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
+import ViewTrip from "./pages/ViewTrip";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Home />} />
+          <Route path="/view-trip/:tripId" element={<ViewTrip />} />
           {/* Add routes for Login and Register */}
         </Routes>
       </Router>
