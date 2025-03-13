@@ -42,6 +42,20 @@ const ViewTrip = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Typography
+        variant="h3"
+        component="h1"
+        gutterBottom
+        sx={{
+          textAlign: "center",
+          mb: 4,
+          fontWeight: 600,
+          color: "primary.main",
+        }}
+      >
+        Trip Details
+      </Typography>
+
       <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom fontWeight={600}>
           {trip.title}
