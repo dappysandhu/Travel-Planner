@@ -5,12 +5,9 @@ import { Link } from "react-router-dom";
 function Home() {
   return (
     <Container sx={{ textAlign: "center", mt: 10 }}>
-      {/* App Name */}
       <Typography variant="h3" component="h1" gutterBottom>
         Travel Itinerary Planner
       </Typography>
-
-      {/* App Description */}
       <Typography
         variant="h6"
         component="p"
@@ -19,8 +16,6 @@ function Home() {
       >
         Plan and organize your trips with ease.
       </Typography>
-
-      {/* Navigation Buttons */}
       <Box mt={4}>
         <Button
           variant="contained"
@@ -31,7 +26,7 @@ function Home() {
         >
           Login
         </Button>
-        <Button variant="outlined" component={Link} to="/register">
+        <Button variant="outlined" component={Link} to="/signup">
           Sign Up
         </Button>
       </Box>

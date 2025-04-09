@@ -1,30 +1,10 @@
 .app-container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  padding-top: 64px; /* This creates space for the fixed navbar */
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-
-  /* Responsive adjustments */
-  @media (max-width: 1200px) {
-    max-width: 100%;
-    padding: 15px;
-  }
-
-  @media (max-width: 768px) {
-    padding: 10px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 5px;
-  }
 }
-
-
 body {
   margin: 0;
   padding: 0;
