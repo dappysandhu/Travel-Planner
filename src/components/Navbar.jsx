@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
-  Typography,
   Button,
   IconButton,
   Avatar,
@@ -14,15 +13,19 @@ import HomeIcon from "@mui/icons-material/Home";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LoginIcon from "@mui/icons-material/Login";
 import LogoutIcon from "@mui/icons-material/Logout";
-import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/zoomedLogo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  useEffect(() => {
+    console.log("Authentication state changed:", isAuthenticated);
+  }, [isAuthenticated]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -41,7 +44,7 @@ const Navbar = () => {
   return (
     <AppBar
       position="fixed"
-      sx={{ width: "100%", top: 0, left: 0, right: 0, zIndex: 1000 }}
+      sx={{ width: "100%", top: 0, left: 0, right: 0, zIndex: 1000, p: 0 }}
     >
       <Toolbar>
         <IconButton
@@ -50,20 +53,37 @@ const Navbar = () => {
           sx={{ mr: 2 }}
           onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")}
         >
-          <FlightTakeoffIcon />
+          <img
+            src={logo}
+            alt="WanderWeave"
+            style={{
+              marginLeft: "24px",
+              maxHeight: "80px",
+              width: "auto",
+              transform: "scale(2.2)",
+            }}
+          />
         </IconButton>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Travel Planner
-        </Typography>
+
+        <div style={{ flexGrow: 1 }} />
 
         {!isAuthenticated && (
-          <Button
-            color="inherit"
-            startIcon={<HomeIcon />}
-            onClick={() => navigate("/")}
-          >
-            Home
-          </Button>
+          <>
+            <Button
+              color="inherit"
+              startIcon={<HomeIcon />}
+              onClick={() => navigate("/")}
+            >
+              Home
+            </Button>
+            <Button
+              color="inherit"
+              startIcon={<LoginIcon />}
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </Button>
+          </>
         )}
 
         {isAuthenticated && (
@@ -81,16 +101,6 @@ const Navbar = () => {
               </Avatar>
             </IconButton>
           </>
-        )}
-
-        {!isAuthenticated && (
-          <Button
-            color="inherit"
-            startIcon={<LoginIcon />}
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
         )}
 
         <Menu
@@ -114,9 +124,11 @@ const Navbar = () => {
           >
             <SettingsIcon sx={{ mr: 1 }} /> Settings
           </MenuItem>
-          <MenuItem onClick={handleLogout}>
-            <LogoutIcon sx={{ mr: 1 }} /> Logout
-          </MenuItem>
+          {isAuthenticated && (
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon sx={{ mr: 1 }} /> Logout
+            </MenuItem>
+          )}
         </Menu>
       </Toolbar>
     </AppBar>

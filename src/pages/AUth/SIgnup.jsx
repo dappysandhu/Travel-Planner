@@ -1,72 +1,121 @@
 import React, { useState } from "react";
-import { Container, Typography, TextField, Button, Box } from "@mui/material";
+import { Typography, TextField, Button, Paper, Grid, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import signupImage from "../../assets/travel5.jpg"; // Adjust the path as necessary
+import logo from "../../assets/applogo-blue.png"; // Add your logo path
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
-    navigate("/dashboard");
+    if (password === confirmPassword) {
+      // Handle signup logic here
+      navigate("/login");
+    }
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Sign Up
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-        <TextField
-          label="Email"
-          name="email"
-          type="email"
-          fullWidth
-          margin="normal"
-          value={formData.email}
-          onChange={handleChange}
-          required
+    <Box sx={{ overflow: "hidden", width: "100%" }}>
+      <Grid
+        container
+        component="main"
+        sx={{ height: "100vh", maxWidth: "100%" }}
+      >
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            backgroundImage: `url(${signupImage})`,
+            backgroundRepeat: "no-repeat",
+            backgroundColor: (t) =>
+              t.palette.mode === "light"
+                ? t.palette.grey[50]
+                : t.palette.grey[900],
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         />
-        <TextField
-          label="Password"
-          name="password"
-          type="password"
-          fullWidth
-          margin="normal"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          label="Confirm Password"
-          name="confirmPassword"
-          type="password"
-          fullWidth
-          margin="normal"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{ mt: 3 }}
+        <Grid
+          item
+          xs={12}
+          sm={8}
+          md={5}
+          component={Paper}
+          elevation={6}
+          square
+          sx={{
+            padding: { xs: "16px", sm: "24px" },
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            overflowX: "hidden",
+          }}
         >
-          Sign Up
-        </Button>
-      </Box>
-    </Container>
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={logo}
+              alt="App Logo"
+              style={{ maxHeight: "150px", maxWidth: "100%" }}
+            />
+          </div>
+          <Typography component="h1" variant="h5" align="center">
+            Sign Up
+          </Typography>
+          <form onSubmit={handleSignup}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Email Address"
+              autoComplete="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign Up
+            </Button>
+            <Grid container>
+              <Grid item>
+                <Button onClick={() => navigate("/login")}>
+                  Already have an account? Sign In
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 

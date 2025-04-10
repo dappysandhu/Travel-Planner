@@ -1,27 +1,24 @@
 /* eslint-disable react/prop-types */
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("isAuthenticated") === "true";
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const login = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
+  const login = async (email, password) => {
+    // Simulate an API call for login
+    if (email === "test@gmail.com" && password === "password") {
+      setIsAuthenticated(true);
+      return { email }; // Return user object
+    } else {
+      throw new Error("Invalid credentials");
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem("isAuthenticated");
     setIsAuthenticated(false);
   };
-
-  useEffect(() => {
-    const authStatus = localStorage.getItem("isAuthenticated") === "true";
-    setIsAuthenticated(authStatus);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>

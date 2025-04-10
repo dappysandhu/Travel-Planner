@@ -10,14 +10,15 @@ import {
   CardContent,
   IconButton,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { dummyTrips } from "../data/tripsData";
+import { dummyTrips } from "../data/tripsData"; // Import existing trips data
 
 const AddEditTrip = () => {
   const { tripId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [tripData, setTripData] = useState({
     title: "",
     startDate: "",
@@ -41,13 +42,32 @@ const AddEditTrip = () => {
   });
 
   useEffect(() => {
-    if (tripId) {
+    // Check if there's a destination passed from the Popular Destinations component
+    if (location.state && location.state.destination) {
+      const { name, country, activities, accommodation } =
+        location.state.destination; // Destructure the destination data
+      setTripData({
+        ...tripData,
+        title: `${name} Trip`, // Set a default title
+        destinations: [
+          {
+            id: `d${Date.now()}`,
+            name: name,
+            country: country,
+            startDate: "", // You can set default start and end dates if needed
+            endDate: "",
+            activities: activities,
+            accommodation: accommodation,
+          },
+        ],
+      });
+    } else if (tripId) {
       const existingTrip = dummyTrips.find((trip) => trip.id === tripId);
       if (existingTrip) {
         setTripData(existingTrip);
       }
     }
-  }, [tripId]);
+  }, [tripId, location.state]);
 
   const handleChange = (e) => {
     setTripData({ ...tripData, [e.target.name]: e.target.value });
@@ -102,7 +122,13 @@ const AddEditTrip = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Trip Data:", tripData);
-    navigate("/dashboard");
+    // Here you would typically save the trip data to your state management or API
+    // For example, you can push the new trip to dummyTrips if using local state
+    dummyTrips.push({
+      id: `${dummyTrips.length + 1}`, // Generate a new ID
+      ...tripData,
+    });
+    navigate("/dashboard"); // Redirect to dashboard after saving
   };
 
   return (

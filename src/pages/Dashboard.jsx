@@ -25,6 +25,7 @@ import DateRangeIcon from "@mui/icons-material/DateRange";
 import HotelIcon from "@mui/icons-material/Hotel";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
 import { dummyTrips } from "../data/tripsData";
+import PopularDestinations from "../components/PopularDestinations";
 
 // Function to get a background image based on destination
 const getDestinationImage = (destination) => {
@@ -83,25 +84,25 @@ const Dashboard = () => {
           >
             Plan, organize, and relive your travel adventures all in one place
           </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            component={Link}
-            to="/add-trip"
-            startIcon={<AddIcon />}
-            sx={{
-              borderRadius: 30,
-              px: 4,
-              py: 1.5,
-              boxShadow: "0 8px 16px rgba(255, 109, 0, 0.2)",
-            }}
-          >
-            Create New Adventure
-          </Button>
+          {upcomingTrips.length !== 0 ? (
+            <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              to="/add-trip"
+              sx={{
+                borderRadius: 30,
+                px: 4,
+                py: 1.5,
+                boxShadow: "0 8px 16px rgba(138, 170, 251, 0.2)",
+              }}
+              startIcon={<AddIcon />}
+            >
+              Create New Trip
+            </Button>
+          ) : null}
         </Box>
 
-        {/* Stats Section */}
         <Grid container spacing={3} sx={{ mb: 6 }}>
           <Grid item xs={12} md={4}>
             <Card
@@ -136,7 +137,7 @@ const Dashboard = () => {
                 justifyContent: "center",
                 p: 3,
                 backgroundImage:
-                  "linear-gradient(135deg, #ff9e40 0%, #ffcc80 100%)",
+                  "linear-gradient(135deg, #008080 0%, #4db6ac 100%)",
                 color: "white",
               }}
             >
@@ -210,10 +211,20 @@ const Dashboard = () => {
                 color="primary"
                 component={Link}
                 to="/add-trip"
+                sx={{
+                  borderRadius: 30,
+                  px: 4,
+                  py: 1.5,
+                  boxShadow: "0 8px 16px rgba(138, 170, 251, 0.2)",
+                }}
                 startIcon={<AddIcon />}
               >
                 Create New Trip
               </Button>
+
+              <Box sx={{ mt: 4 }}>
+                <PopularDestinations />
+              </Box>
             </Paper>
           ) : (
             <Grid container spacing={3}>
