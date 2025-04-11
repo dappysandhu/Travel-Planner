@@ -14,7 +14,7 @@ const CustomToast = ({ open, message, severity, onClose }) => {
         onClose={onClose}
         severity={severity}
         variant="filled"
-        sx={{ width: "100%" }}
+        sx={{ width: "100%", color: "white" }}
       >
         {message}
       </Alert>

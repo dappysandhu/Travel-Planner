@@ -5,51 +5,48 @@ import {
   Button,
   Paper,
   Grid,
-  Link,
   CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import loginImage from "../../assets/travel5.jpg";
+import resetPasswordImage from "../../assets/travel5.jpg";
 import logo from "../../assets/applogo-blue.png";
-import CustomToast from "../../components/Toast";
 
-const Login = () => {
+const ResetPassword = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
+  const { token } = useParams();
+  const { resetPassword } = useAuth();
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords don't match!");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
-      setToast({
-        open: true,
-        message: "Welcome Back !!",
-        severity: "success",
-      });
-      // setTimeout(() => {
-      navigate("/dashboard");
-      // }, 2000);
+      await resetPassword(token, password);
+      setSuccess("Password has been reset successfully!");
+      navigate("/login");
     } catch (err) {
-      setToast({
-        open: true,
-        message:
-          err.response?.data?.message || "Failed to login Please try again.",
-        severity: "error",
-      });
+      setError(
+        err.response?.data?.message ||
+          "Failed to reset password. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -57,19 +54,13 @@ const Login = () => {
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
-      <CustomToast
-        open={toast.open}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={handleToastClose}
-      />
       <Grid
         item
         xs={false}
         sm={4}
         md={7}
         sx={{
-          backgroundImage: `url(${loginImage})`,
+          backgroundImage: `url(${resetPasswordImage})`,
           backgroundRepeat: "no-repeat",
           backgroundColor: (t) =>
             t.palette.mode === "light"
@@ -98,28 +89,48 @@ const Login = () => {
           <img src={logo} alt="App Logo" style={{ maxHeight: "150px" }} />
         </div>
         <Typography component="h1" variant="h5" align="center">
-          Sign in
+          Reset Password
         </Typography>
+        {error && (
+          <Typography
+            color="error"
+            variant="body2"
+            align="center"
+            sx={{ mt: 2 }}
+          >
+            {error}
+          </Typography>
+        )}
+        {success && (
+          <Typography
+            color="success.main"
+            variant="body2"
+            align="center"
+            sx={{ mt: 2 }}
+          >
+            {success}
+          </Typography>
+        )}
         <form onSubmit={handleSubmit}>
           <TextField
             margin="normal"
             required
             fullWidth
-            label="Email Address"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            label="New Password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            helperText="Password must be at least 6 characters long"
           />
           <TextField
             margin="normal"
             required
             fullWidth
-            label="Password"
+            label="Confirm New Password"
             type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <Button
             type="submit"
@@ -128,23 +139,11 @@ const Login = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Sign In"}
+            {loading ? <CircularProgress size={24} /> : "Reset Password"}
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link
-                onClick={() => navigate("/forgot-password")}
-                variant="body2"
-                sx={{ cursor: "pointer" }}
-              >
-                Forgot password?
-              </Link>
-            </Grid>
             <Grid item>
-              <Button onClick={() => navigate("/signup")}>
-                {`Don't have an account? Sign Up
-`}{" "}
-              </Button>
+              <Button onClick={() => navigate("/login")}>Back to Login</Button>
             </Grid>
           </Grid>
         </form>
@@ -153,4 +152,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;

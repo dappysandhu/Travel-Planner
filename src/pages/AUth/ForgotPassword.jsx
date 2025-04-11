@@ -5,20 +5,18 @@ import {
   Button,
   Paper,
   Grid,
-  Link,
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import loginImage from "../../assets/travel5.jpg";
+import forgotPasswordImage from "../../assets/travel5.jpg";
 import logo from "../../assets/applogo-blue.png";
 import CustomToast from "../../components/Toast";
 
-const Login = () => {
+const ForgotPassword = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({
     open: false,
@@ -33,21 +31,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await login(email, password);
+      await forgotPassword(email);
       setToast({
         open: true,
-        message: "Welcome Back !!",
+        message: "Password reset email sent. Please check your inbox.",
         severity: "success",
       });
-      // setTimeout(() => {
-      navigate("/dashboard");
-      // }, 2000);
     } catch (err) {
       setToast({
         open: true,
         message:
-          err.response?.data?.message || "Failed to login Please try again.",
+          err.response?.data?.message ||
+          "Failed to send reset email. Please try again.",
         severity: "error",
       });
     } finally {
@@ -69,7 +66,7 @@ const Login = () => {
         sm={4}
         md={7}
         sx={{
-          backgroundImage: `url(${loginImage})`,
+          backgroundImage: `url(${forgotPasswordImage})`,
           backgroundRepeat: "no-repeat",
           backgroundColor: (t) =>
             t.palette.mode === "light"
@@ -98,9 +95,13 @@ const Login = () => {
           <img src={logo} alt="App Logo" style={{ maxHeight: "150px" }} />
         </div>
         <Typography component="h1" variant="h5" align="center">
-          Sign in
+          Forgot Password
         </Typography>
         <form onSubmit={handleSubmit}>
+          <Typography variant="body2" sx={{ mt: 2 }}>
+            {`Enter your email address and we'll send you a link to reset your
+            password.`}
+          </Typography>
           <TextField
             margin="normal"
             required
@@ -111,16 +112,6 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
           <Button
             type="submit"
             fullWidth
@@ -128,23 +119,11 @@ const Login = () => {
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : "Sign In"}
+            {loading ? <CircularProgress size={24} /> : "Send Reset Link"}
           </Button>
           <Grid container>
-            <Grid item xs>
-              <Link
-                onClick={() => navigate("/forgot-password")}
-                variant="body2"
-                sx={{ cursor: "pointer" }}
-              >
-                Forgot password?
-              </Link>
-            </Grid>
             <Grid item>
-              <Button onClick={() => navigate("/signup")}>
-                {`Don't have an account? Sign Up
-`}{" "}
-              </Button>
+              <Button onClick={() => navigate("/login")}>Back to Login</Button>
             </Grid>
           </Grid>
         </form>
@@ -153,4 +132,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;
