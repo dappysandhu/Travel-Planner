@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -26,6 +26,7 @@ import HotelIcon from "@mui/icons-material/Hotel";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
 import { dummyTrips } from "../data/tripsData";
 import PopularDestinations from "../components/PopularDestinations";
+import { useLoading } from "../context/LoadingContext"; // Import useLoading hook
 
 // Function to get a background image based on destination
 const getDestinationImage = (destination) => {
@@ -48,8 +49,79 @@ const isTripCompleted = (trip) => {
 };
 
 const Dashboard = () => {
+  const { startLoading, stopLoading } = useLoading();
+  const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [totalImages, setTotalImages] = useState(0);
+
+  // Get upcoming and past trips
   const upcomingTrips = dummyTrips.filter((trip) => !isTripCompleted(trip));
   const pastTrips = dummyTrips.filter((trip) => isTripCompleted(trip));
+
+  // Start loading on component mount
+  useEffect(() => {
+    startLoading();
+
+    // Calculate total images to track loading
+    // Main images: one per card for upcoming + past trips
+    const totalTripCards = upcomingTrips.length + pastTrips.length;
+
+    // Avatar images in past trips (each destination has an avatar)
+    const totalDestinationAvatars = pastTrips.reduce(
+      (total, trip) => total + Math.min(trip.destinations.length, 3), // Max 3 avatars per trip due to AvatarGroup
+      0
+    );
+
+    // Set the total images to track
+    setTotalImages(totalTripCards + totalDestinationAvatars);
+
+    // If no images to load, stop loading
+    if (totalTripCards + totalDestinationAvatars === 0) {
+      stopLoading();
+    }
+
+    // Cleanup function
+    return () => {
+      stopLoading();
+    };
+  }, [startLoading, stopLoading, upcomingTrips.length, pastTrips.length]);
+
+  // Monitor image loading progress
+  useEffect(() => {
+    if (totalImages > 0 && imagesLoaded >= totalImages) {
+      // All images have loaded, stop the loader
+      stopLoading();
+    }
+  }, [imagesLoaded, totalImages, stopLoading]);
+
+  // Handler for when an image loads
+  const handleImageLoad = () => {
+    setImagesLoaded((prev) => prev + 1);
+  };
+
+  // Handler for when an image fails to load
+  const handleImageError = () => {
+    // Count failed images as loaded to avoid infinite loading
+    setImagesLoaded((prev) => prev + 1);
+  };
+
+  // Preload destination images to ensure they're ready
+  useEffect(() => {
+    // Get all unique destinations
+    const allDestinations = new Set();
+    dummyTrips.forEach((trip) => {
+      trip.destinations.forEach((dest) => {
+        allDestinations.add(dest.name);
+      });
+    });
+
+    // Preload all unique destination images
+    allDestinations.forEach((destName) => {
+      const img = new Image();
+      img.src = getDestinationImage(destName);
+      img.onload = handleImageLoad;
+      img.onerror = handleImageError;
+    });
+  }, []);
 
   return (
     <Box
@@ -257,6 +329,8 @@ const Dashboard = () => {
                             trip.destinations[0]?.name
                           )}
                           alt={trip.title}
+                          onLoad={handleImageLoad}
+                          onError={handleImageError}
                         />
                         <Chip
                           icon={<FlightTakeoffIcon />}
@@ -424,6 +498,8 @@ const Dashboard = () => {
                           )}
                           alt={trip.title}
                           sx={{ filter: "grayscale(0.3)" }}
+                          onLoad={handleImageLoad}
+                          onError={handleImageError}
                         />
                         <Chip
                           icon={<CheckCircleIcon />}
@@ -495,6 +571,8 @@ const Dashboard = () => {
                                 key={index}
                                 alt={dest.name}
                                 src={getDestinationImage(dest.name)}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
                               />
                             ))}
                           </AvatarGroup>

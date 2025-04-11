@@ -1,25 +1,88 @@
 import React, { useState } from "react";
-import { Typography, TextField, Button, Paper, Grid, Box } from "@mui/material";
+import {
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import signupImage from "../../assets/travel5.jpg"; // Adjust the path as necessary
-import logo from "../../assets/applogo-blue.png"; // Add your logo path
+import { useAuth } from "../../context/AuthContext";
+import signupImage from "../../assets/travel5.jpg";
+import logo from "../../assets/applogo-blue.png";
+import CustomToast from "../../components/Toast";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleToastClose = () => {
+    setToast({ ...toast, open: false });
+  };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (password === confirmPassword) {
-      // Handle signup logic here
-      navigate("/login");
+
+    if (password !== confirmPassword) {
+      setToast({
+        open: true,
+        message: "Passwords don't match!",
+        severity: "error",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      setToast({
+        open: true,
+        message: "Password must be at least 6 characters long",
+        severity: "error",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signup(name, email, password);
+      setToast({
+        open: true,
+        message: "welcome to WanderWeave",
+        severity: "success",
+      });
+      navigate("/dashboard");
+    } catch (err) {
+      setToast({
+        open: true,
+        message:
+          err.response?.data?.message ||
+          "Registration failed. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Box sx={{ overflow: "hidden", width: "100%" }}>
+      <CustomToast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={handleToastClose}
+      />
       <Grid
         container
         component="main"
@@ -72,9 +135,18 @@ const Signup = () => {
               margin="normal"
               required
               fullWidth
+              label="Full Name"
+              autoComplete="name"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
               label="Email Address"
               autoComplete="email"
-              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -84,9 +156,10 @@ const Signup = () => {
               fullWidth
               label="Password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              helperText="Password must be at least 6 characters long"
             />
             <TextField
               margin="normal"
@@ -102,8 +175,9 @@ const Signup = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
-              Sign Up
+              {loading ? <CircularProgress size={24} /> : "Sign Up"}
             </Button>
             <Grid container>
               <Grid item>
