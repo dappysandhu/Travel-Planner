@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import moment from "moment";
 import {
   Container,
   Typography,
@@ -27,9 +28,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HotelIcon from "@mui/icons-material/Hotel";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
 import PlaceIcon from "@mui/icons-material/Place";
-import { dummyTrips } from "../data/tripsData";
+import axios from "../utils/axiosConfig";
+import DeleteTripModal from "../components/DeleteTripModal";
+import CustomToast from "../components/Toast";
 
-// Helper function to get destination image
 const getDestinationImage = (destination) => {
   const locations = {
     Paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
@@ -45,15 +47,58 @@ const getDestinationImage = (destination) => {
 
 const ViewTrip = () => {
   const [trip, setTrip] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [toast, showToast] = useState({
+    open: false,
+    message: "",
+    type: "success",
+  });
   const { tripId } = useParams();
   const navigate = useNavigate();
 
+  const handleToastClose = () => {
+    showToast({ ...toast, open: false });
+  };
+
   useEffect(() => {
-    const foundTrip = dummyTrips.find((t) => t.id === tripId);
-    setTrip(foundTrip);
+    const fetchTrip = async () => {
+      try {
+        const response = await axios.get(`/api/trips/${tripId}`);
+        setTrip(response.data);
+      } catch (error) {
+        setError(
+          error.response?.data?.message || "Error fetching trip details"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrip();
   }, [tripId]);
 
-  if (!trip) {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  const handleDeleteClick = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setDeleteLoading(true);
+    try {
+      await axios.delete(`/api/trips/${tripId}`);
+      showToast("Trip deleted successfully");
+      navigate("/dashboard");
+    } catch (error) {
+      showToast(error, "Failed to delete trip", "error");
+    } finally {
+      setDeleteLoading(false);
+      setDeleteModalOpen(false);
+    }
+  };
+
+  if (loading) {
     return (
       <Box
         sx={{
@@ -73,19 +118,40 @@ const ViewTrip = () => {
     );
   }
 
-  const isPastTrip = new Date(trip.endDate) < new Date();
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/dashboard")}
+        >
+          Back to Dashboard
+        </Button>
+      </Container>
+    );
+  }
+
+  const isPastTrip = moment().isAfter(moment(trip.endDate));
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
         backgroundImage: "linear-gradient(to bottom, #e6f2ff, #ffffff)",
-        pt: 4,
+        pt: 8,
         pb: 8,
       }}
     >
+      <CustomToast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={handleToastClose}
+      />
       <Container maxWidth="lg">
-        {/* Back button */}
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/dashboard")}
@@ -94,7 +160,6 @@ const ViewTrip = () => {
           Back to trips
         </Button>
 
-        {/* Hero section */}
         <Paper
           elevation={0}
           sx={{
@@ -134,7 +199,8 @@ const ViewTrip = () => {
                 variant="h6"
                 sx={{ color: "white", opacity: 0.9, mb: 2 }}
               >
-                {trip.startDate} - {trip.endDate}
+                {moment(trip.startDate).add(1, "day").format("MMM DD, YYYY")} -{" "}
+                {moment(trip.endDate).add(1, "day").format("MMM DD, YYYY")}
               </Typography>
               {isPastTrip ? (
                 <Chip
@@ -155,9 +221,7 @@ const ViewTrip = () => {
           </Box>
         </Paper>
 
-        {/* Trip itinerary */}
         <Grid container spacing={4}>
-          {/* Left column - Destinations and timeline */}
           <Grid item xs={12} md={8}>
             <Paper
               elevation={0}
@@ -188,16 +252,17 @@ const ViewTrip = () => {
                   <Step
                     key={destination.id}
                     active={true}
-                    completed={new Date(destination.endDate) < new Date()}
+                    completed={moment().isAfter(moment(destination.endDate))}
                   >
                     <StepLabel
                       StepIconComponent={() => (
                         <Avatar
                           sx={{
-                            bgcolor:
-                              new Date(destination.endDate) < new Date()
-                                ? "success.main"
-                                : "primary.main",
+                            bgcolor: moment().isAfter(
+                              moment(destination.endDate)
+                            )
+                              ? "success.main"
+                              : "primary.main",
                             width: 32,
                             height: 32,
                           }}
@@ -210,7 +275,13 @@ const ViewTrip = () => {
                         {destination.name}, {destination.country}
                       </Typography>
                       <Typography color="text.secondary" variant="body2">
-                        {destination.startDate} - {destination.endDate}
+                        {moment(destination.startDate)
+                          .add(1, "day")
+                          .format("MMM DD, YYYY")}{" "}
+                        -{" "}
+                        {moment(destination.endDate)
+                          .add(1, "day")
+                          .format("MMM DD, YYYY")}
                       </Typography>
                     </StepLabel>
                     <StepContent>
@@ -275,9 +346,15 @@ const ViewTrip = () => {
                               {destination.accommodation.address}
                             </Typography>
                             <Typography variant="body2">
-                              Check-in: {destination.accommodation.checkIn}
+                              Check-in:{" "}
+                              {moment(destination.accommodation.checkIn)
+                                .add(1, "day")
+                                .format("MMM DD, YYYY")}
                               <br />
-                              Check-out: {destination.accommodation.checkOut}
+                              Check-out:{" "}
+                              {moment(destination.accommodation.checkOut)
+                                .add(1, "day")
+                                .format("MMM DD, YYYY")}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -289,7 +366,6 @@ const ViewTrip = () => {
             </Paper>
           </Grid>
 
-          {/* Right column - Trip actions and status */}
           <Grid item xs={12} md={4}>
             <Paper
               elevation={0}
@@ -299,8 +375,8 @@ const ViewTrip = () => {
                 boxShadow: "0 8px 16px rgba(149, 157, 165, 0.2)",
                 mb: 3,
                 borderLeft: isPastTrip
-                  ? "4px solid #4caf50"
-                  : "4px solid #1976d2",
+                  ? "4px solid rgba(76, 175, 80, 0.6)"
+                  : "4px solid rgba(25, 118, 210, 0.6)",
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -322,14 +398,19 @@ const ViewTrip = () => {
                 <Button
                   variant="outlined"
                   color="error"
-                  onClick={() => console.log("Delete Trip")}
-                  disabled={isPastTrip}
+                  onClick={handleDeleteClick}
                   startIcon={<DeleteIcon />}
-                  fullWidth
-                  sx={{ py: 1.2 }}
                 >
-                  Delete This Trip
+                  Delete Trip
                 </Button>
+
+                <DeleteTripModal
+                  open={deleteModalOpen}
+                  onClose={() => setDeleteModalOpen(false)}
+                  trip={trip}
+                  onConfirm={handleDeleteConfirm}
+                  loading={deleteLoading}
+                />
               </Box>
 
               {isPastTrip && (
@@ -349,7 +430,7 @@ const ViewTrip = () => {
                 p: 3,
                 borderRadius: 3,
                 boxShadow: "0 8px 16px rgba(149, 157, 165, 0.2)",
-                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6)), url(${getDestinationImage(trip.destinations[0]?.name)})`,
+                backgroundImage: `linear-gradient(rgba(255, 247, 247, 0.9), rgba(0, 0, 0, 0.2)), url(${getDestinationImage(trip.destinations[0]?.name)})`,
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -360,10 +441,7 @@ const ViewTrip = () => {
                   Duration:
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  {Math.ceil(
-                    (new Date(trip.endDate) - new Date(trip.startDate)) /
-                      (1000 * 60 * 60 * 24)
-                  )}{" "}
+                  {moment(trip.endDate).diff(moment(trip.startDate), "days")}{" "}
                   days
                 </Typography>
               </Box>
@@ -381,7 +459,7 @@ const ViewTrip = () => {
                 </Typography>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   {new Set(trip.destinations.map((d) => d.country)).size}{" "}
-                  visited
+                  {isPastTrip ? "visited" : "to visit"}
                 </Typography>
               </Box>
             </Paper>

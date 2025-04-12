@@ -20,8 +20,16 @@ import logo from "../assets/zoomedLogo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, currentUser } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+  };
 
   useEffect(() => {
     console.log("Authentication state changed:", isAuthenticated);
@@ -96,8 +104,16 @@ const Navbar = () => {
               Dashboard
             </Button>
             <IconButton color="inherit" onClick={handleProfileMenuOpen}>
-              <Avatar sx={{ width: 32, height: 32 }}>
-                <AccountCircleIcon />
+              <Avatar
+                sx={{
+                  bgcolor: "#e3f2fd",
+                  width: 32,
+                  height: 32,
+                  color: "#1976d2",
+                  fontWeight: 600,
+                }}
+              >
+                {getInitials(currentUser.name)}
               </Avatar>
             </IconButton>
           </>

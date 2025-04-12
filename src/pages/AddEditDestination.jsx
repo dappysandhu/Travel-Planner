@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -6,13 +6,18 @@ import {
   Button,
   Box,
   Grid,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "../utils/axiosConfig";
 
 const AddEditDestination = () => {
   const { tripId, destinationId } = useParams();
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [error, setError] = useState("");
   const [destinationData, setDestinationData] = useState({
     name: "",
     country: "",
@@ -26,6 +31,33 @@ const AddEditDestination = () => {
       checkOut: "",
     },
   });
+
+  useEffect(() => {
+    const fetchDestinationData = async () => {
+      if (tripId && destinationId) {
+        setLoading(true);
+        try {
+          const response = await axios.get(`/api/trips/${tripId}`);
+          const destination = response.data.destinations.find(
+            (d) => d._id === destinationId
+          );
+          if (destination) {
+            setDestinationData({
+              ...destination,
+              activities: destination.activities.join(", "),
+            });
+          }
+        } catch (error) {
+          setError(
+            error.response?.data?.message || "Error fetching destination data"
+          );
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchDestinationData();
+  }, [tripId, destinationId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,24 +75,69 @@ const AddEditDestination = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Convert activities string to array
-    const formattedData = {
-      ...destinationData,
-      activities: destinationData.activities
-        .split(",")
-        .map((item) => item.trim()),
-    };
-    console.log("Destination Data:", formattedData);
-    navigate(`/view-trip/${tripId}`);
+    setSaveLoading(true);
+    setError("");
+
+    try {
+      const formattedData = {
+        ...destinationData,
+        activities: destinationData.activities
+          .split(", ")
+          .map((item) => item.trim()),
+      };
+
+      if (destinationId) {
+        await axios.put(
+          `/api/trips/${tripId}/destinations/${destinationId}`,
+          formattedData
+        );
+      } else {
+        const response = await axios.get(`/api/trips/${tripId}`);
+        const updatedDestinations = [
+          ...response.data.destinations,
+          formattedData,
+        ];
+        await axios.put(`/api/trips/${tripId}`, {
+          destinations: updatedDestinations,
+        });
+      }
+
+      navigate(`/view-trip/${tripId}`);
+    } catch (error) {
+      setError(error.response?.data?.message || "Error saving destination");
+      setSaveLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "80vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         {destinationId ? "Edit Destination" : "Add Destination"}
       </Typography>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -179,11 +256,17 @@ const AddEditDestination = () => {
           <Button
             variant="outlined"
             onClick={() => navigate(`/view-trip/${tripId}`)}
+            disabled={saveLoading}
           >
             Cancel
           </Button>
-          <Button type="submit" variant="contained" color="primary">
-            Save Destination
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={saveLoading}
+          >
+            {saveLoading ? <CircularProgress size={24} /> : "Save Destination"}
           </Button>
         </Box>
       </Box>
