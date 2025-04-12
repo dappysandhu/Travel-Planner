@@ -10,8 +10,6 @@ import {
   CardContent,
   CardMedia,
   CardActionArea,
-  Avatar,
-  AvatarGroup,
   Divider,
   Paper,
 } from "@mui/material";
@@ -24,11 +22,12 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import HotelIcon from "@mui/icons-material/Hotel";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
-import { dummyTrips } from "../data/tripsData";
 import PopularDestinations from "../components/PopularDestinations";
-import { useLoading } from "../context/LoadingContext"; // Import useLoading hook
+import { useLoading } from "../context/LoadingContext";
+import { useToast } from "../context/ToastContext";
+import axios from "../utils/axiosConfig";
+import moment from "moment";
 
-// Function to get a background image based on destination
 const getDestinationImage = (destination) => {
   const locations = {
     Paris: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34",
@@ -50,97 +49,89 @@ const isTripCompleted = (trip) => {
 
 const Dashboard = () => {
   const { startLoading, stopLoading } = useLoading();
+  const { showToast } = useToast();
+  const [trips, setTrips] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [totalImages, setTotalImages] = useState(0);
 
-  // Get upcoming and past trips
-  const upcomingTrips = dummyTrips.filter((trip) => !isTripCompleted(trip));
-  const pastTrips = dummyTrips.filter((trip) => isTripCompleted(trip));
+  useEffect(() => {
+    const fetchTrips = async () => {
+      startLoading();
+      try {
+        const response = await axios.get("/api/trips");
+        setTrips(response.data);
+      } catch (error) {
+        showToast(
+          error.response?.data?.message || "Failed to fetch trips",
+          "error"
+        );
+      }
+    };
+    fetchTrips();
+  }, []);
 
-  // Start loading on component mount
+  const upcomingTrips = trips.filter((trip) => !isTripCompleted(trip));
+  const pastTrips = trips.filter((trip) => isTripCompleted(trip));
+
+  console.log(`upcoming trip: ${upcomingTrips}`);
+
   useEffect(() => {
     startLoading();
-
-    // Calculate total images to track loading
-    // Main images: one per card for upcoming + past trips
-    const totalTripCards = upcomingTrips.length + pastTrips.length;
-
-    // Avatar images in past trips (each destination has an avatar)
+    const totalTripCards = trips.length;
     const totalDestinationAvatars = pastTrips.reduce(
-      (total, trip) => total + Math.min(trip.destinations.length, 3), // Max 3 avatars per trip due to AvatarGroup
+      (total, trip) => total + Math.min(trip.destinations.length, 3),
       0
     );
-
-    // Set the total images to track
     setTotalImages(totalTripCards + totalDestinationAvatars);
-
-    // If no images to load, stop loading
     if (totalTripCards + totalDestinationAvatars === 0) {
       stopLoading();
     }
+    return () => stopLoading();
+  }, [startLoading, stopLoading, trips.length, pastTrips]);
 
-    // Cleanup function
-    return () => {
-      stopLoading();
-    };
-  }, [startLoading, stopLoading, upcomingTrips.length, pastTrips.length]);
-
-  // Monitor image loading progress
   useEffect(() => {
     if (totalImages > 0 && imagesLoaded >= totalImages) {
-      // All images have loaded, stop the loader
       stopLoading();
     }
   }, [imagesLoaded, totalImages, stopLoading]);
 
-  // Handler for when an image loads
   const handleImageLoad = () => {
     setImagesLoaded((prev) => prev + 1);
   };
 
-  // Handler for when an image fails to load
   const handleImageError = () => {
-    // Count failed images as loaded to avoid infinite loading
     setImagesLoaded((prev) => prev + 1);
   };
 
-  // Preload destination images to ensure they're ready
   useEffect(() => {
-    // Get all unique destinations
     const allDestinations = new Set();
-    dummyTrips.forEach((trip) => {
-      trip.destinations.forEach((dest) => {
-        allDestinations.add(dest.name);
-      });
+    trips.forEach((trip) => {
+      if (trip.destinations) {
+        trip.destinations.forEach((dest) => {
+          allDestinations.add(dest.name);
+        });
+      }
     });
 
-    // Preload all unique destination images
     allDestinations.forEach((destName) => {
       const img = new Image();
       img.src = getDestinationImage(destName);
       img.onload = handleImageLoad;
       img.onerror = handleImageError;
     });
-  }, []);
+  }, [trips]);
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
         backgroundImage: "linear-gradient(to bottom, #e6f2ff, #ffffff)",
-        pt: 4,
+        pt: 8,
         pb: 8,
       }}
     >
       <Container>
-        {/* Header Section */}
-        <Box
-          sx={{
-            textAlign: "center",
-            mb: 6,
-            position: "relative",
-          }}
-        >
+        <Box sx={{ textAlign: "center", mb: 6, position: "relative" }}>
           <Typography
             variant="h3"
             component="h1"
@@ -156,7 +147,7 @@ const Dashboard = () => {
           >
             Plan, organize, and relive your travel adventures all in one place
           </Typography>
-          {upcomingTrips.length !== 0 ? (
+          {upcomingTrips.length > 0 ? (
             <Button
               variant="contained"
               color="primary"
@@ -192,7 +183,7 @@ const Dashboard = () => {
             >
               <MapIcon sx={{ fontSize: 48, mb: 2 }} />
               <Typography variant="h4" component="div" sx={{ fontWeight: 700 }}>
-                {dummyTrips.length}
+                {trips.length}
               </Typography>
               <Typography variant="h6" sx={{ opacity: 0.9 }}>
                 Total Trips
@@ -247,17 +238,11 @@ const Dashboard = () => {
           </Grid>
         </Grid>
 
-        {/* Upcoming Trips Section */}
         <Box sx={{ mb: 6 }}>
           <Typography
             variant="h4"
             gutterBottom
-            sx={{
-              mb: 3,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+            sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
           >
             <FlightTakeoffIcon color="primary" /> Upcoming Trips
           </Typography>
@@ -293,7 +278,6 @@ const Dashboard = () => {
               >
                 Create New Trip
               </Button>
-
               <Box sx={{ mt: 4 }}>
                 <PopularDestinations />
               </Box>
@@ -301,7 +285,7 @@ const Dashboard = () => {
           ) : (
             <Grid container spacing={3}>
               {upcomingTrips.map((trip) => (
-                <Grid item xs={12} md={6} lg={4} key={trip.id}>
+                <Grid item xs={12} md={6} lg={4} key={trip._id}>
                   <Card
                     sx={{
                       height: "100%",
@@ -313,7 +297,7 @@ const Dashboard = () => {
                   >
                     <CardActionArea
                       component={Link}
-                      to={`/view-trip/${trip.id}`}
+                      to={`/view-trip/${trip._id}`}
                       sx={{
                         flex: 1,
                         display: "flex",
@@ -325,9 +309,7 @@ const Dashboard = () => {
                         <CardMedia
                           component="img"
                           height="180"
-                          image={getDestinationImage(
-                            trip.destinations[0]?.name
-                          )}
+                          image={getDestinationImage(trip.destination)}
                           alt={trip.title}
                           onLoad={handleImageLoad}
                           onError={handleImageError}
@@ -353,7 +335,6 @@ const Dashboard = () => {
                         >
                           {trip.title}
                         </Typography>
-
                         <Box
                           sx={{
                             display: "flex",
@@ -364,10 +345,15 @@ const Dashboard = () => {
                         >
                           <DateRangeIcon fontSize="small" color="action" />
                           <Typography variant="body2" color="text.secondary">
-                            {trip.startDate} - {trip.endDate}
+                            {moment(trip.startDate)
+                              .add(1, "day")
+                              .format("MMM DD, YYYY")}{" "}
+                            -{" "}
+                            {moment(trip.endDate)
+                              .add(1, "day")
+                              .format("MMM DD, YYYY")}
                           </Typography>
                         </Box>
-
                         <Box
                           sx={{
                             display: "flex",
@@ -433,17 +419,11 @@ const Dashboard = () => {
           )}
         </Box>
 
-        {/* Past Trips Section */}
         <Box>
           <Typography
             variant="h4"
             gutterBottom
-            sx={{
-              mb: 3,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+            sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}
           >
             <CheckCircleIcon color="success" /> Past Adventures
           </Typography>
@@ -468,7 +448,7 @@ const Dashboard = () => {
           ) : (
             <Grid container spacing={3}>
               {pastTrips.map((trip) => (
-                <Grid item xs={12} md={6} lg={4} key={trip.id}>
+                <Grid item xs={12} md={6} lg={4} key={trip._id}>
                   <Card
                     sx={{
                       height: "100%",
@@ -481,7 +461,7 @@ const Dashboard = () => {
                   >
                     <CardActionArea
                       component={Link}
-                      to={`/view-trip/${trip.id}`}
+                      to={`/view-trip/${trip._id}`}
                       sx={{
                         flex: 1,
                         display: "flex",
@@ -493,9 +473,7 @@ const Dashboard = () => {
                         <CardMedia
                           component="img"
                           height="180"
-                          image={getDestinationImage(
-                            trip.destinations[0]?.name
-                          )}
+                          image={getDestinationImage(trip.destination)}
                           alt={trip.title}
                           sx={{ filter: "grayscale(0.3)" }}
                           onLoad={handleImageLoad}
@@ -522,7 +500,6 @@ const Dashboard = () => {
                         >
                           {trip.title}
                         </Typography>
-
                         <Box
                           sx={{
                             display: "flex",
@@ -532,11 +509,12 @@ const Dashboard = () => {
                           }}
                         >
                           <DateRangeIcon fontSize="small" color="action" />
+                          <DateRangeIcon fontSize="small" color="action" />
                           <Typography variant="body2" color="text.secondary">
-                            {trip.startDate} - {trip.endDate}
+                            {new Date(trip.startDate).toLocaleDateString()} -{" "}
+                            {new Date(trip.endDate).toLocaleDateString()}
                           </Typography>
                         </Box>
-
                         <Box
                           sx={{
                             display: "flex",
@@ -547,12 +525,10 @@ const Dashboard = () => {
                         >
                           <LocationOnIcon fontSize="small" color="action" />
                           <Typography variant="body2" color="text.secondary">
-                            {trip.destinations.map((d) => d.name).join(" → ")}
+                            {trip.destination}
                           </Typography>
                         </Box>
-
                         <Divider sx={{ my: 2 }} />
-
                         <Box
                           sx={{
                             display: "flex",
@@ -560,23 +536,6 @@ const Dashboard = () => {
                             alignItems: "center",
                           }}
                         >
-                          <AvatarGroup
-                            max={3}
-                            sx={{
-                              "& .MuiAvatar-root": { width: 32, height: 32 },
-                            }}
-                          >
-                            {trip.destinations.map((dest, index) => (
-                              <Avatar
-                                key={index}
-                                alt={dest.name}
-                                src={getDestinationImage(dest.name)}
-                                onLoad={handleImageLoad}
-                                onError={handleImageError}
-                              />
-                            ))}
-                          </AvatarGroup>
-
                           <Typography
                             variant="body2"
                             color="success.main"

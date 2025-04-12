@@ -4,44 +4,74 @@ import Image3 from "../assets/travel3.jpg";
 
 export const popularDestinations = [
   {
-    id: "d1",
-    name: "Paris",
-    country: "France",
+    title: "European Adventure",
+    startDate: "2025-04-05T00:00:00.000Z",
+    endDate: "2025-04-16T00:00:00.000Z",
     image: Image1,
-    activities: [
-      "Visit Eiffel Tower",
-      "Louvre Museum Tour",
-      "Seine River Cruise",
+    destinations: [
+      {
+        name: "Paris",
+        country: "France",
+        startDate: "2025-04-05T00:00:00.000Z",
+        endDate: "2025-04-11T00:00:00.000Z",
+        activities: [
+          "Visit Eiffel Tower",
+          "Louvre Museum Tour",
+          "Seine River Cruise",
+        ],
+        accommodation: {
+          name: "Grand Hotel Paris",
+          address: "123 Champs-Élysées",
+          checkIn: "2025-04-05T00:00:00.000Z",
+          checkOut: "2025-04-11T00:00:00.000Z",
+        },
+      },
     ],
-    accommodation: {
-      name: "Grand Hotel Paris",
-      address: "123 Champs-Élysées",
-    },
   },
   {
-    id: "d2",
-    name: "Yosemite National Park",
-    country: "United States",
+    title: "American National Parks",
+    startDate: "2025-05-01T00:00:00.000Z",
+    endDate: "2025-05-15T00:00:00.000Z",
     image: Image2,
-    activities: [
-      "Hiking in Yosemite Valley",
-      "Visit El Capitan",
-      "Yosemite Falls",
+    destinations: [
+      {
+        name: "Yosemite National Park",
+        country: "United States",
+        startDate: "2025-05-01T00:00:00.000Z",
+        endDate: "2025-05-15T00:00:00.000Z",
+        activities: [
+          "Hiking in Yosemite Valley",
+          "Visit El Capitan",
+          "Yosemite Falls",
+        ],
+        accommodation: {
+          name: "Yosemite Valley Lodge",
+          address: "9035 Village Dr, Yosemite Village, CA",
+          checkIn: "2025-05-01T00:00:00.000Z",
+          checkOut: "2025-05-15T00:00:00.000Z",
+        },
+      },
     ],
-    accommodation: {
-      name: "Yosemite Valley Lodge",
-      address: "9035 Village Dr, Yosemite Village, CA",
-    },
   },
   {
-    id: "d3",
-    name: "Tokyo",
-    country: "Japan",
+    title: "Japanese Journey",
+    startDate: "2025-06-01T00:00:00.000Z",
+    endDate: "2025-06-14T00:00:00.000Z",
     image: Image3,
-    activities: ["Shibuya Crossing", "Tokyo Tower", "Senso-ji Temple"],
-    accommodation: {
-      name: "Tokyo Bay Hotel",
-      address: "1-2-3 Shinjuku, Tokyo",
-    },
+    destinations: [
+      {
+        name: "Tokyo",
+        country: "Japan",
+        startDate: "2025-06-01T00:00:00.000Z",
+        endDate: "2025-06-14T00:00:00.000Z",
+        activities: ["Shibuya Crossing", "Tokyo Tower", "Senso-ji Temple"],
+        accommodation: {
+          name: "Tokyo Bay Hotel",
+          address: "1-2-3 Shinjuku, Tokyo",
+          checkIn: "2025-06-01T00:00:00.000Z",
+          checkOut: "2025-06-14T00:00:00.000Z",
+        },
+      },
+    ],
   },
 ];
