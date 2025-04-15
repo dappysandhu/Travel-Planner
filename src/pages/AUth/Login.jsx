@@ -11,8 +11,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import loginImage from "../../assets/travel5.jpg";
-import logo from "../../assets/applogo-blue.png";
-import CustomToast from "../../components/Toast";
+import logo from "../../assets/appLogo-blue.png";
+import { useToast } from "../../context/ToastContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,49 +20,30 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
-  };
+  const { showSuccessToast, showErrorToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setLoading(true);
     try {
-      await login(email, password);
-      setToast({
-        open: true,
-        message: "Welcome Back !!",
-        severity: "success",
-      });
-      // setTimeout(() => {
+      await login(email, password); 
+      showSuccessToast("Welcome Back !!");
       navigate("/dashboard");
-      // }, 2000);
+      setLoading(false);
     } catch (err) {
-      setToast({
-        open: true,
-        message:
-          err.response?.data?.message || "Failed to login Please try again.",
-        severity: "error",
-      });
-    } finally {
+      console.error("Login Error:", err);
+      const errorMessage = err?.message || "Login failed. Please try again.";
+      showErrorToast(errorMessage); 
+    } 
+    finally {
       setLoading(false);
     }
+    
   };
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
-      <CustomToast
-        open={toast.open}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={handleToastClose}
-      />
       <Grid
         item
         xs={false}
@@ -142,8 +123,7 @@ const Login = () => {
             </Grid>
             <Grid item>
               <Button onClick={() => navigate("/signup")}>
-                {`Don't have an account? Sign Up
-`}{" "}
+                {`Don't have an account? Sign Up`}
               </Button>
             </Grid>
           </Grid>

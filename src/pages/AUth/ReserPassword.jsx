@@ -10,7 +10,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import resetPasswordImage from "../../assets/travel5.jpg";
-import logo from "../../assets/applogo-blue.png";
+import logo from "../../assets/appLogo-blue.png";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
