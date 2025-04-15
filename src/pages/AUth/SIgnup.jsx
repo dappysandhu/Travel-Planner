@@ -11,8 +11,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import signupImage from "../../assets/travel5.jpg";
-import logo from "../../assets/applogo-blue.png";
+import logo from "../../assets/appLogo-blue.png";
 import CustomToast from "../../components/Toast";
+import { useToast } from "../../context/ToastContext";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -22,54 +23,29 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const handleToastClose = () => {
-    setToast({ ...toast, open: false });
-  };
+  const { showSuccessToast, showErrorToast } = useToast();
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setToast({
-        open: true,
-        message: "Passwords don't match!",
-        severity: "error",
-      });
+      showErrorToast("Passwords don't match!")
       return;
     }
 
     if (password.length < 6) {
-      setToast({
-        open: true,
-        message: "Password must be at least 6 characters long",
-        severity: "error",
-      });
+      showErrorToast("Password must be at least 6 characters long")
       return;
     }
 
     setLoading(true);
     try {
       await signup(name, email, password);
-      setToast({
-        open: true,
-        message: "welcome to WanderWeave",
-        severity: "success",
-      });
+      showSuccessToast("welcome to WanderWeave")
       navigate("/dashboard");
     } catch (err) {
-      setToast({
-        open: true,
-        message:
-          err.response?.data?.message ||
-          "Registration failed. Please try again.",
-        severity: "error",
-      });
+      showErrorToast(err?.message || "Registration failed. Please try again.")
+      
     } finally {
       setLoading(false);
     }
@@ -77,12 +53,6 @@ const Signup = () => {
 
   return (
     <Box sx={{ overflow: "hidden", width: "100%" }}>
-      <CustomToast
-        open={toast.open}
-        message={toast.message}
-        severity={toast.severity}
-        onClose={handleToastClose}
-      />
       <Grid
         container
         component="main"

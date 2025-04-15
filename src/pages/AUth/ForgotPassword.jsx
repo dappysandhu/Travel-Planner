@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import forgotPasswordImage from "../../assets/travel5.jpg";
-import logo from "../../assets/applogo-blue.png";
+import logo from "../../assets/appLogo-blue.png";
 import CustomToast from "../../components/Toast";
 
 const ForgotPassword = () => {
